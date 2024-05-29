@@ -5,9 +5,9 @@ using OneOf;
 
 namespace EnrollmentContext.Enrollments.EnrollStudent;
 
-public record EnrollStudent(CorellationId CorellationId, StudentId Student, Course Course, uint CountStudentsOnCourse) : Command
+public record EnrollStudent(StudentId Student, Course Course, uint CountStudentsOnCourse)
 {
-   public OneOf<StudentEnrolled, Error> Execute(Enrollment enrollment)
+   public OneOf<Enrollment, Error> Execute(Enrollment enrollment)
    {
       if (enrollment.Enrolled)
          return new StudenAlreadyEnrolled(Student, Course.Id);
@@ -15,8 +15,9 @@ public record EnrollStudent(CorellationId CorellationId, StudentId Student, Cour
       if (Course.StudentsLimit.HasValue && CountStudentsOnCourse >= Course.StudentsLimit)
          return new EnrollmentLimitReached(Student, Course);
 
-      return new StudentEnrolled(
-         EventId.NewId(), enrollment.Id, enrollment.SequenceNumber.Inc(), CorellationId,
-         Student, Course.Id);
+      return enrollment with
+      {
+         Enrolled = true
+      };
    }
 }
